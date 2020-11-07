@@ -88,7 +88,7 @@ app.layout = html.Div(
     [
         html.Div(
             [
-                html.H1("Personalized News App"),
+                html.H1("News App"),
                 html.H6("Capital One SES Entry"),
                 html.H6("By: Portia Gaitskell"),
             ]
