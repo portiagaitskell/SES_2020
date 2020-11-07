@@ -1,4 +1,5 @@
-# import requests
+import requests
+import pandas as pd
 #
 # API_KEY = '07030a5437224023b9c9bd4148da4541'
 #
@@ -40,14 +41,19 @@
 #
 # print(response5.json())
 
-changed_id = '{"index":0,"type":"button-preview"}.n_clicks'
-changed_id = changed_id.replace('.n_clicks',"")[1:-1]
-change_dict = {}
-print(changed_id)
-for elt in changed_id.split(","):
-       line = elt.split(':')
-       k = line[0].strip('\"')
-       v = line[1].strip('\"')
-       change_dict[k]=v
-print(change_dict)
+def search(keyword, start_date, end_date, API_KEY='ee193772a41f4eec96caa9325f6f9ab6'):
+    url = 'https://newsapi.org/v2/everything?q={keyword}&from={start}&to={end}&sortBy=popularity&apiKey={API}'.format(keyword=keyword, API=API_KEY, start=start_date, end=end_date)
+    #url='https://newsapi.org/v2/everything?q=bitcoin&apiKey={API}'.format(API=API_KEY)
+    response = (requests.get(url)).json()
 
+    df = pd.DataFrame(columns=['source_id', 'source_name', 'title', 'description', 'url', 'urlToImage'])
+
+    for article in response['articles']:
+        vals = [article['source']['id'], article['source']['name'], article['title'], article['description'],
+                article['url'], article['urlToImage']]
+        df = df.append(pd.Series(vals, index=df.columns), ignore_index=True)
+
+    return df
+
+
+# print(search('bitcoin', '2020-11-01', '2020-11-04'))

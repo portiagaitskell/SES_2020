@@ -30,32 +30,53 @@ slider_set = 8
 print(slider_marks)
 
 API_KEY = 'ee193772a41f4eec96caa9325f6f9ab6'
-df_1 = pd.read_csv('df_1.csv')
-df_2 = pd.read_csv('df_2.csv')
-df_3 = pd.read_csv('df_3.csv')
 
-index_start = {'entertainment':0, 'technology':len(df_1), 'sports':len(df_1)+len(df_2)}
-
-dfs = [df_1, df_2, df_2]
-index_conversion = {'entertainment':0, 'technology':1, 'sports':2}
-
-# for i, category in enumerate(['entertainment','technology','sports']):
-#     dfs[i]= pd.DataFrame(columns=['source_id', 'source_name', 'title', 'description', 'url'])
-#
-#     url = ('http://newsapi.org/v2/top-headlines?country=us&category={category}&apiKey={api}').format(api=API_KEY, category=category)
-#
-#     response = (requests.get(url)).json()
-#
-#     for article in response['articles']:
-#         vals = [article['source']['id'], article['source']['name'], article['title'], article['description'],
-#                 article['url']]
-#         dfs[i] = dfs[i].append(pd.Series(vals, index=dfs[i].columns), ignore_index=True)
-
+# Import dataFrames if already saved
 #df_1 = pd.read_csv('df_1.csv')
 #df_2 = pd.read_csv('df_2.csv')
 #df_3 = pd.read_csv('df_3.csv')
 
-#dfs = [df_1, df_2, df_3]
+
+df_1 = None
+df_2 = None
+df_3 = None
+dfs = [df_1, df_2, df_3]
+index_conversion = {'entertainment':0, 'technology':1, 'sports':2}
+
+
+# uncomment if dataframes not already saved
+for i, category in enumerate(['entertainment','technology','sports']):
+    dfs[i]= pd.DataFrame(columns=['source_id', 'source_name', 'title', 'description', 'url'])
+
+    url = ('http://newsapi.org/v2/top-headlines?country=us&category={category}&apiKey={api}').format(api=API_KEY, category=category)
+
+    response = (requests.get(url)).json()
+
+    for article in response['articles']:
+        vals = [article['source']['id'], article['source']['name'], article['title'], article['description'],
+                article['url']]
+        dfs[i] = dfs[i].append(pd.Series(vals, index=dfs[i].columns), ignore_index=True)
+
+
+
+def search(keyword, start_date, end_date, API_KEY='ee193772a41f4eec96caa9325f6f9ab6'):
+    url = 'https://newsapi.org/v2/everything?q={keyword}&from={start}&to={end}&sortBy=popularity&apiKey={API}'.format(keyword=keyword, API=API_KEY, start=start_date, end=end_date)
+    response = (requests.get(url)).json()
+
+    print(response)
+    if response['status'] == 'error':
+        return None
+
+    else:
+        df = pd.DataFrame(columns=['source_id', 'source_name', 'title', 'description', 'url', 'urlToImage'])
+
+        for article in response['articles']:
+            vals = [article['source']['id'], article['source']['name'], article['title'], article['description'],
+                    article['url'], article['urlToImage']]
+            df = df.append(pd.Series(vals, index=df.columns), ignore_index=True)
+
+        return df
+
 
 external_stylesheets = ['style.css',dbc.themes.CYBORG]
 
@@ -67,61 +88,63 @@ app.layout = html.Div(
     [
         html.Div(
             [
-                html.H1("Title"),
-                html.H6("Capital One SES Entry: Portia Gaitskell"),
+                html.H1("News App"),
+                html.H6("Capital One SES Entry"),
+                html.H6("By: Portia Gaitskell"),
             ]
         ),
 
-        # html.Div(
-        #         [
-        #             dcc.Slider(
-        #                 id='slider',
-        #                 min=min(slider_marks),
-        #                 max=max(slider_marks),
-        #                 step=step,
-        #                 marks=slider_marks,
-        #                 value=slider_set
-        #             ),
-        #         ]
-        #     ),
-
         html.Div([
                 html.Div([
-                    html.H3('Dropdown'),
+                    html.H3('Category'),
                     dcc.Dropdown(id='type-selection',
                         options=[
                             {'label': 'Entertainment', 'value': 'entertainment'},
                             {'label': 'Technology', 'value': 'technology'},
                             {'label': 'Sports', 'value': 'sports'}
-                        ],
+                        ],  optionHeight=65,
                         value='entertainment',
                     ),
-                ], className="dropdown column"),
+                    html.Div([
+                        html.H3('Keyword Search'),
+                        dcc.Input(
+                            id = 'search-keyword',
+                            placeholder='Input a keyword...',
+                            type='text',
+                            value=''
+                        ),
+                        dcc.DatePickerRange(
+                            #id = 'date-picker',
+                            month_format='MMM Do, YY',
+                            end_date_placeholder_text='MMM Do, YY',
+                            start_date_placeholder_text='MMM Do, YY',
+                            #start_date=date(2017,6,21)
+                    id='calendar-container'),
+
+                        dbc.Button("Search", id='search-button', className="ml-auto", n_clicks=0)
+                    ], id="search-container"
+                    )
+
+                ],
+                    className="dropdown column"),
 
                 html.Div([
                     html.H3('Top Headlines', id='top-news-title'),
                     html.H5(children=["Loading articles..."], id="top-news-content")
                 ],
-                id="top-news-container", className="five columns"),
+                id="top-news-container", className="four columns"),
 
-                html.Div(children=[], id='modal-container')
+                html.Div([
+                    html.H3('Searched Headlines'),
+                    html.H5(children=['Loading...'], id='search-content')
+                ], id='searched-container', className='four columns'
+                ),
 
 
-            #     dbc.Modal([
-            #         dbc.ModalHeader("Header"),
-            #         dbc.ModalBody(children=[], id='modal-content'),
-            #         dbc.ModalFooter(
-            #             dbc.Button("Close", id="close", className="ml-auto")
-            #         ),
-            #     ],
-            #     id="modal",
-            # ),
+                html.Div(children=[], id='modal-container'),
 
-                # html.Div([
-                #     html.H3('Article Preview'),
-                #     html.H5([html.P(children=['loading preview'], id='preview-link')], id="preview-content")
-                # ],
-                # id="preview-container", className="five columns"),
+                html.Div(children=[], id='modal-container2')
+
             ], className="data-container"),
     ],
     className="", id='main-container'
@@ -165,9 +188,11 @@ def update_figure(article_type):
         line = html.Div([html.A(html.P(c['title']), href=c['url'], target='_blank'), html.Button('Preview', id=button_id, n_clicks=0)], id='article-container')
         html_lines.append(html.A(line))
 
+        source = 'Source: ' + str(c['source_name'])
+
         modal = dbc.Modal([
                     dbc.ModalHeader(html.H1(c['title'])),
-                    dbc.ModalBody(html.H3(description), id='modal-content'),
+                    dbc.ModalBody([html.H3(description), html.H3(source)], id='modal-content'),
                     dbc.ModalFooter(children=[ html.A(html.H4('Link to article'), href=c['url'], target='_blank'),
                         dbc.Button("Close", id=close_id, className="ml-auto", n_clicks=0)
                     ]),
@@ -192,32 +217,23 @@ def update_figure(article_type):
      State({'type': 'modal-popup', 'index': MATCH}, 'is_open')],
 )
 def display_output(n_preview, n_close, id, is_open):
-    print('XX')
-    print('Preview:', n_preview)
-    print(n_close)
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    print(changed_id)
-
     if n_preview==0 and n_close == 0:
         return False
 
     change_dict = {}
     if len(changed_id) > 5:
         changed_id = changed_id.strip('.n_clicks')[1:-1]
-        #changed_id = changed_id[1:-1]
-        print(changed_id)
         for elt in changed_id.split(","):
             line = elt.split(':')
             k = line[0].strip('\"')
             v = line[1].strip('\"')
-            #print(int(v))
             try:
                 v = int(v)
             except:
                 pass
             change_dict[k]=v
 
-        print(change_dict)
         button_type = change_dict['type']
         if button_type == 'modal-close':
             return False
@@ -229,71 +245,114 @@ def display_output(n_preview, n_close, id, is_open):
                 return False
             else:
                 return False
+    return False
 
+@app.callback(
+    [Output("search-content", "children"),
+     Output('modal-container2', 'children')],
+    [Input("search-button", "n_clicks")],
+    [State('search-keyword', 'value'),
+     State('calendar-container', 'start_date'),
+     State('calendar-container', 'end_date')],
+)
+def update_output(n_click, keyword, start, end):
+
+    #print(start)
+    #print(end)
+
+    #return 'Testing ' + str(keyword)
+    #return u'Input 1 {} and Input 2 {}'.format(input1, input2)
+
+    if n_click > 0 and len(keyword) > 0:
+        df = search(keyword, start, end)
+
+        if df is None:
+            return ['Error Request. Please check that date entered is within 1 month of current date due to query limitations.', None]
+
+        html_lines = []
+        modal_content = []
+
+        for i, c in enumerate(df.iloc):
+            # index = i+index_conversion[article_type]
+            index = i
+            # modal_type = 'modal-' + str(article_type)
+            button_id = {'type': 'search-button-preview', 'index': index}
+            modal_id = {'type': 'search-modal-popup', 'index': index}
+            close_id = {'type': 'search-modal-close', 'index': index}
+
+            description = c['description']
+
+            if isinstance(description, float):
+                description = 'No preview available'
+
+            line = html.Div([html.A(html.P(c['title']), href=c['url'], target='_blank'),
+                             html.Button('Preview', id=button_id, n_clicks=0)], id='article-container')
+            html_lines.append(html.A(line))
+
+            source = 'Source: ' + str(c['source_name'])
+
+            modal = dbc.Modal([
+                dbc.ModalHeader(html.H1(c['title'])),
+                dbc.ModalBody([html.H3(description), html.H3(source)], id='search-modal-content'),
+                dbc.ModalFooter(children=[html.A(html.H4('Link to article'), href=c['url'], target='_blank'),
+                                          dbc.Button("Close", id=close_id, className="ml-auto", n_clicks=0)
+                                          ]),
+            ],
+                id=modal_id, size="lg", is_open=False
+            )
+            # modal.
+            modal_content.append(modal)
+
+        article_html = html.Div(html_lines)
+
+
+        return [article_html, modal_content]
+
+    return [None, None]
+
+
+@app.callback(
+    Output({'type': 'search-modal-popup', 'index': MATCH}, 'is_open'),
+    [Input({'type': 'search-button-preview', 'index': MATCH}, 'n_clicks'),
+     Input({'type': 'search-modal-close', 'index': MATCH}, 'n_clicks')],
+    [State({'type': 'search-button-preview', 'index': MATCH}, 'id'),
+     State({'type': 'search-modal-popup', 'index': MATCH}, 'is_open')],
+)
+def display_output(n_preview, n_close, id, is_open):
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    if n_preview==0 and n_close == 0:
+        return False
+
+    change_dict = {}
+    if len(changed_id) > 5:
+        changed_id = changed_id.strip('.n_clicks')[1:-1]
+        for elt in changed_id.split(","):
+            line = elt.split(':')
+            k = line[0].strip('\"')
+            v = line[1].strip('\"')
+            try:
+                v = int(v)
+            except:
+                pass
+            change_dict[k]=v
+
+        button_type = change_dict['type']
+        print(button_type)
+        if button_type == 'search-modal-close':
+            return False
+        else:
+            idx = change_dict['index']
+            if idx == id['index']:
+                return True
+            elif idx != id['index'] and is_open:
+                return False
+            else:
+                return False
     return False
 
 
-# @app.callback(
-#     [Output("modal", "is_open"),
-#      Output('modal-content', 'children')],
-#     [Input({'type': 'button-preview', 'index': ALL}, 'n_clicks'),
-#      Input("close", "n_clicks")],
-#     [State({'type': 'button-preview', 'index': ALL}, 'id'),
-#      State('type-selection', 'value'),
-#      State('modal', 'is_open')],
-# )
-# def display_modal(n_clicks, close_button, id_val, article_type, is_open):
-#     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-#     print(changed_id)
-#     changed_id = changed_id.replace('.n_clicks',"")[1:-1]
-#     change_dict = {}
-#     print(changed_id)
-#
-#     for elt in changed_id.split(","):
-#         line = elt.split(':')
-#         k = line[0].strip('\"')
-#         v = line[1].strip('\"')
-#         change_dict[k]=v
-#
-#     print(change_dict)
-#     idx = change_dict['index']
-#     print(idx)
-#     #print(idx)
-#     print(n_clicks)
-#     #print(close_button)
-#     #print(id_val)
-#     #print(article_type)
-#     #print(is_open)
-#     if close_button and is_open:
-#         return False, None
-#
-#     if is_open is False:
-#         df = dfs[index_conversion[article_type]]
-#         #idx = n_clicks.index(max(n_clicks))
-#
-#         #print(int(id_val['index']))
-#         info = df.iloc[idx]
-#         content = info['title']
-#
-#         return True, content
-#
-#     return False, None
 
 
-# @app.callback(
-#     [Output('preview-content', 'children'),
-#      ],
-#     [Input('preview-link', 'n-clicks'),
-#      Input('preview-link', 'children'),
-#      Input('type-selection', 'value')])
-# def update_preview(n, title, article_type):
-#     df = dfs[index_conversion[article_type]]
-#     idx = df[df['title']==title].index.tolist()[0]
-#
-#     info = df.iloc[idx]
-#     preview_html = html.Div([html.P(children=info['description'])])
-#
-#     return preview_html
 
 
 if __name__ == '__main__':

@@ -9,9 +9,9 @@ category='sports'
 #url = ('http://newsapi.org/v2/top-headlines?country=us&category={category}&apiKey={api}').format(api=API_KEY,
 #                                                                                                 category=category)
 
-url = 'https://newsapi.org/v2/sources?apiKey=07030a5437224023b9c9bd4148da4541'
-response = (requests.get(url)).json()
-print(response)
+# url = 'https://newsapi.org/v2/sources?apiKey=07030a5437224023b9c9bd4148da4541'
+# response = (requests.get(url)).json()
+# print(response)
 
 
 # category = 'sports'
