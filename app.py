@@ -8,26 +8,26 @@ import requests
 
 from datetime import date, timedelta
 
-today = date.today()
-
-# Textual month, day and year
-d2 = today.strftime("%B %d, %Y")
-print("d2 =", d2)
-
-# mm/dd/y
-d3 = today.strftime("%m/%d/%y")
-print("d3 =", d3)
-
-# Month abbreviation, day and year
-d4 = today.strftime("%b-%d-%Y")
-print("d4 =", d4)
-
-slider_marks = {8-k: (today-timedelta(k)).strftime("%m/%d/%y") for k in range(8,-1,-1)}
-
-step=1
-slider_set = 8
-
-print(slider_marks)
+# today = date.today()
+#
+# # Textual month, day and year
+# d2 = today.strftime("%B %d, %Y")
+# print("d2 =", d2)
+#
+# # mm/dd/y
+# d3 = today.strftime("%m/%d/%y")
+# print("d3 =", d3)
+#
+# # Month abbreviation, day and year
+# d4 = today.strftime("%b-%d-%Y")
+# print("d4 =", d4)
+#
+# slider_marks = {8-k: (today-timedelta(k)).strftime("%m/%d/%y") for k in range(8,-1,-1)}
+#
+# step=1
+# slider_set = 8
+#
+# print(slider_marks)
 
 API_KEY = 'ee193772a41f4eec96caa9325f6f9ab6'
 
@@ -58,7 +58,7 @@ for i, category in enumerate(['entertainment','technology','sports']):
         dfs[i] = dfs[i].append(pd.Series(vals, index=dfs[i].columns), ignore_index=True)
 
 
-
+# Used to make keyword, and date searches
 def search(keyword, start_date, end_date, API_KEY='ee193772a41f4eec96caa9325f6f9ab6'):
     url = 'https://newsapi.org/v2/everything?q={keyword}&from={start}&to={end}&sortBy=popularity&apiKey={API}'.format(keyword=keyword, API=API_KEY, start=start_date, end=end_date)
     response = (requests.get(url)).json()
@@ -88,7 +88,7 @@ app.layout = html.Div(
     [
         html.Div(
             [
-                html.H1("News App"),
+                html.H1("Personalized News App"),
                 html.H6("Capital One SES Entry"),
                 html.H6("By: Portia Gaitskell"),
             ]

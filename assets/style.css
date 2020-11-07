@@ -523,21 +523,21 @@ p {
 }
 
 #top-news-container {
-  height: 70vh;
+  height: 65vh;
 }
 
 #top-news-content {
-  height: 70vh;
+  height: 65vh;
   overflow-y: scroll
 }
 
 #searched-container {
-    height: 70vh;
+    height: 65vh;
     overflow-y: scroll
 }
 
 #search-contet {
-    height: 70vh;
+    height: 65vh;
     overflow-y: scroll
 }
 
